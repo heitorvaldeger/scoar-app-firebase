@@ -1,9 +1,14 @@
+// import cors from "cors";
 import * as functions from "firebase-functions";
+import UserController from "./controllers/UserController";
 
-// // Start writing functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+const userController = new UserController();
+
+export const getAllUsers =
+  functions.https.onCall(userController.getAllUsers.bind(userController));
+
+export const createUser =
+  functions.https.onCall(userController.createUser.bind(userController));
+
+export const deleteUser =
+  functions.https.onCall(userController.deleteUser.bind(userController));
