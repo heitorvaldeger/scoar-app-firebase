@@ -3,7 +3,7 @@ import {IUserModel} from "../interfaces/IUserModel";
 import {UserService} from "../services/UserService";
 
 import * as functions from "firebase-functions";
-
+import {FirebaseMessages} from "../enums/FirebaseMessages";
 class UserController {
   private readonly userService: UserService;
 
@@ -17,18 +17,24 @@ class UserController {
   }
 
   async createUser(userModel: IUserModel) {
-    const userExists = await this.userService.userExists(userModel.email);
-    if (userExists) {
-      throw new functions.https.HttpsError("already-exists", "O e-mail fornecido já está em uso.");
-    }
-    const userResult = await this.userService.createUser(userModel);
+    try {
+      const userResult = await this.userService.createUser(userModel);
+      return userResult;
+    } catch (error: any) {
+      if (error.errorInfo.code === "auth/email-already-exists") {
+        throw new functions.https.HttpsError("already-exists", FirebaseMessages.EMAIL_ALREADY_EXISTS);
+      }
+      if (error.errorInfo.code === "auth/invalid-email") {
+        throw new functions.https.HttpsError("invalid-argument", FirebaseMessages.EMAIL_IS_INVALID);
+      }
 
-    return userResult;
+      throw new functions.https.HttpsError("unknown", FirebaseMessages.DEFAULT);
+    }
   }
 
   async deleteUser(uid: string) {
     if (!uid) {
-      throw new functions.https.HttpsError("invalid-argument", "O UID do usuário não foi informado.");
+      throw new functions.https.HttpsError("invalid-argument", FirebaseMessages.UID_PARAM_NOT_FOUND);
     }
 
     await this.userService.deleteUser(uid);
