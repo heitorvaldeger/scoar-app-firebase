@@ -19,7 +19,8 @@ class UserController {
   async createUser(userModel: IUserModel) {
     try {
       const userResult = await this.userService.createUser(userModel);
-      return userResult;
+
+      return await this.userService.getUserByUid(userResult.uid);
     } catch (error: any) {
       if (error.errorInfo.code === "auth/email-already-exists") {
         throw new functions.https.HttpsError("already-exists", FirebaseMessages.EMAIL_ALREADY_EXISTS);
@@ -33,6 +34,7 @@ class UserController {
   }
 
   async deleteUser(uid: string) {
+    console.log(uid);
     if (!uid) {
       throw new functions.https.HttpsError("invalid-argument", FirebaseMessages.UID_PARAM_NOT_FOUND);
     }

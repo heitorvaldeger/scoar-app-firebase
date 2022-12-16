@@ -1,6 +1,6 @@
 import {UserRecord} from "firebase-admin/auth";
-import defaultAuth from "../../config/firebase-auth";
 import {IUserModel} from "../../interfaces/IUserModel";
+import defaultAuth from "../../config/firebase-auth";
 
 export class UserService {
   async getAllUsers(): Promise<UserRecord[]> {
@@ -17,8 +17,9 @@ export class UserService {
       password: userModel.matricula,
     });
 
-    if (userModel.isAdmin && userResult) {
-      await defaultAuth.setCustomUserClaims(userResult.uid, {isAdmin: true});
+    if (userResult) {
+      // eslint-disable-next-line max-len
+      await defaultAuth.setCustomUserClaims(userResult.uid, {role: userModel.role});
     }
 
     return userResult;
@@ -32,5 +33,11 @@ export class UserService {
     const user = await defaultAuth.getUserByEmail(email);
 
     return !!user;
+  }
+
+  async getUserByUid(uid: string): Promise<UserRecord> {
+    const user = await defaultAuth.getUser(uid);
+
+    return user;
   }
 }
